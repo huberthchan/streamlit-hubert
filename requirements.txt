@@ -1,5 +1,6 @@
-snowflake-connector-python[pandas]
-altair
 pandas
-snowflake-snowpark-python==0.7.0
 streamlit
+snowflake-snowpark-python
+requests
+beautifulsoup4
+streamlit-chat
