@@ -1,6 +1,7 @@
 pandas
 streamlit
-snowflake-snowpark-python
+#snowflake-snowpark-python
+snowflake-snowpark-python[pandas]
 requests
 beautifulsoup4
 streamlit-chat
