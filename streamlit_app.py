@@ -1,38 +1,40 @@
-from collections import namedtuple
-import altair as alt
-import math
-import pandas as pd
+# Modified from Johannes Rieke's example code
+
 import streamlit as st
+from snowflake.snowpark import Session
 
-"""
-# Welcome to Streamlit!
+st.title('❄️ How to connect Streamlit to a Snowflake database')
 
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:
+# Establish Snowflake session
+@st.cache_resource
+def create_session():
+    return Session.builder.configs(st.secrets.snowflake).create()
 
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
+session = create_session()
+st.success("Connected to Snowflake!")
 
-In the meantime, below is an example of what you can do with just a few lines of code:
-"""
+# Load data table
+@st.cache_data
+def load_data(table_name):
+    ## Read in data table
+    st.write(f"Here's some example data from `{table_name}`:")
+    table = session.table(table_name)
+    
+    ## Do some computation on it
+    table = table.limit(100)
+    
+    ## Collect the results. This will run the query and download the data
+    table = table.collect()
+    return table
 
+# Select and display data table
+table_name = "PETS.PUBLIC.MYTABLE"
 
-with st.echo(code_location='below'):
-    total_points = st.slider("Number of points in spiral", 1, 5000, 2000)
-    num_turns = st.slider("Number of turns in spiral", 1, 100, 9)
+## Display data table
+with st.expander("See Table"):
+    df = load_data(table_name)
+    st.dataframe(df)
 
-    Point = namedtuple('Point', 'x y')
-    data = []
-
-    points_per_turn = total_points / num_turns
-
-    for curr_point_num in range(total_points):
-        curr_turn, i = divmod(curr_point_num, points_per_turn)
-        angle = (curr_turn + 1) * 2 * math.pi * i / points_per_turn
-        radius = curr_point_num / total_points
-        x = radius * math.cos(angle)
-        y = radius * math.sin(angle)
-        data.append(Point(x, y))
-
-    st.altair_chart(alt.Chart(pd.DataFrame(data), height=500, width=500)
-        .mark_circle(color='#0068c9', opacity=0.5)
-        .encode(x='x:Q', y='y:Q'))
+## Writing out data
+for row in df:
+    st.write(f"{row[0]} has a :{row[1]}:")
